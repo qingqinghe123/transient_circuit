@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>第2章 一阶线性电路的暂态响应</title>
+<style>
+:root{--b:#1565C0;--b2:#1E88E5;--pale:#E3F2FD;--og:#E65100;--og2:#FF8F00;--gn:#2E7D32;--pu:#6A1B9A;--rd:#C62828;--tx:#1A1A2E;--g:#F2F4F8;--br:#CFD8DC;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#90A4AE;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;}
+#dk{width:min(100vw,177.78vh);height:min(56.25vw,100vh);position:relative;background:#fff;box-shadow:0 6px 32px rgba(0,0,0,.35);overflow:hidden;}
+/* Slides */
+.sl{position:absolute;inset:0;display:none;flex-direction:column;padding:14px 30px 8px;background:#fff;}
+.sl.on{display:flex;}
+/* Header */
+.hd{display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--b);padding-bottom:8px;margin-bottom:10px;flex-shrink:0;}
+.hd-tag{background:var(--b);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:12px;}
+.hd-ttl{font-size:clamp(16px,2vw,23px);font-weight:900;color:var(--b);}
+.hd-r{margin-left:auto;font-size:10px;color:#bbb;}
+/* Body fills remaining height */
+.bd{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px;overflow:hidden;}
+/* Step reveal — space always pre-allocated */
+.st{opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease;pointer-events:none;flex-shrink:0;}
+.st.vis{opacity:1;transform:none;pointer-events:auto;}
+/* Cols */
+.row{display:flex;gap:10px;flex:1;min-height:0;}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;}
+.col.f15{flex:1.5;}.col.f2{flex:2;}.col.f07{flex:.7;}
+/* Cards */
+.cd{background:var(--g);border-left:5px solid var(--b);border-radius:8px;padding:9px 12px;}
+.cd.o{border-left-color:var(--og2);}.cd.g{border-left-color:#43A047;}.cd.p{border-left-color:#AB47BC;}.cd.r{border-left-color:var(--rd);}
+.cd.bf{background:#E3F2FD;}.cd.of{background:#FFF8E1;}.cd.gf{background:#E8F5E9;}.cd.pf{background:#F3E5F5;}
+.ct{font-size:clamp(12px,1.3vw,15px);font-weight:800;color:var(--b);margin-bottom:3px;}
+.ct.o{color:var(--og);}.ct.g{color:var(--gn);}.ct.p{color:var(--pu);}
+.cb{font-size:clamp(11px,1.1vw,13.5px);color:var(--tx);line-height:1.65;}
+/* Boxes */
+.yb{background:#FFFDE7;border:2px solid #FDD835;border-radius:8px;padding:8px 12px;font-size:clamp(11px,1.1vw,13.5px);color:#4E342E;line-height:1.65;}
+.yb b{color:var(--og);}
+.fb{background:#E8F5E9;border:2px solid #66BB6A;border-radius:8px;padding:7px 14px;font-size:clamp(13px,1.5vw,17px);font-weight:700;color:#1B5E20;text-align:center;}
+.fb.p{background:#F3E5F5;border-color:#AB47BC;color:#4A148C;}
+.fb.o{background:#FFF3E0;border-color:#FFA726;color:#BF360C;}
+.fb.big{font-size:clamp(14px,1.85vw,21px);padding:10px 16px;}
+.fb.med{font-size:clamp(12px,1.4vw,17px);}
+/* Sec title */
+.sec{font-size:clamp(12px,1.3vw,15px);font-weight:900;color:var(--b);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.sec::before{content:'';width:4px;height:.9em;background:var(--og2);border-radius:2px;flex-shrink:0;}
+/* Number list */
+.nl{list-style:none;}
+.nl li{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:clamp(11px,1.1vw,13.5px);line-height:1.6;}
+.nl .n{background:var(--b);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;flex-shrink:0;margin-top:1px;}
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:clamp(10px,1.05vw,13px);}
+th{background:var(--b);color:#fff;padding:6px 7px;font-weight:700;text-align:center;}
+td{padding:5px 7px;border-bottom:1px solid #e5e5e5;text-align:center;}
+tr:nth-child(even) td{background:#EFF3FC;}
+/* Pills */
+.pi{display:inline-block;background:var(--pale);color:var(--b);border-radius:12px;padding:2px 9px;font-size:11px;font-weight:700;margin:2px;}
+.pi.o{background:#FFF3E0;color:var(--og);}.pi.g{background:#E8F5E9;color:var(--gn);}.pi.p{background:#F3E5F5;color:var(--pu);}
+.hl{background:#FFF176;padding:0 2px;border-radius:2px;}
+/* SVG wrap */
+.sw{background:var(--g);border:1.5px solid var(--br);border-radius:8px;display:flex;align-items:center;justify-content:center;padding:3px;overflow:hidden;}
+.sw svg{width:100%;height:100%;}
+/* Canvas setup — KEY FIX: absolute positioning */
+.cwrap{position:relative;flex:1;min-height:0;min-width:0;border-radius:8px;overflow:hidden;background:#F6F9FF;border:1.5px solid var(--br);}
+.cwrap canvas{position:absolute;inset:0;width:100%;height:100%;}
+/* Demo panel */
+.dp{background:var(--g);border:1.5px solid var(--br);border-radius:9px;padding:10px 13px;display:flex;flex-direction:column;gap:6px;}
+.dp label{font-size:clamp(11px,1.15vw,14px);color:#444;font-weight:700;}
+.dp input[type=range]{width:100%;accent-color:var(--b);height:18px;cursor:pointer;}
+.dv{font-size:clamp(14px,1.65vw,19px);font-weight:900;color:var(--b);}
+.ds{font-size:clamp(10px,1.05vw,12.5px);color:#777;}
+/* Cover */
+#s0{background:linear-gradient(135deg,#0D47A1,#1565C0 50%,#0288D1);padding:28px 48px;justify-content:center;}
+#s0 .tag{background:rgba(255,255,255,.2);color:#fff;font-size:12px;padding:3px 14px;border-radius:12px;margin-bottom:12px;display:inline-block;}
+#s0 h1{font-size:clamp(24px,4vw,48px);color:#fff;font-weight:900;line-height:1.2;margin-bottom:11px;}
+#s0 h1 em{color:#FDD835;font-style:normal;}
+#s0 .desc{color:rgba(255,255,255,.88);font-size:clamp(13px,1.4vw,17px);margin-bottom:18px;line-height:1.8;}
+#s0 .toc{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:660px;}
+#s0 .ti{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.27);border-radius:9px;padding:9px 12px;color:#fff;font-size:clamp(12px,1.3vw,15px);font-weight:700;display:flex;align-items:center;gap:8px;}
+#s0 .ti .nb{background:#FDD835;color:#0D47A1;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0;}
+/* Case grid */
+.cg{display:flex;flex:1;min-height:0;border:1.5px solid var(--br);border-radius:9px;overflow:hidden;}
+.ci{flex:1;min-width:0;padding:9px 11px;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;}
+.ci:last-child{border-right:none;}
+.ci-ic{font-size:clamp(20px,2.6vw,32px);margin-bottom:4px;}
+.ci-t{font-size:clamp(11px,1.25vw,14px);font-weight:800;color:var(--b);margin-bottom:4px;}
+.ci-b{font-size:clamp(10px,1.05vw,13px);color:var(--tx);line-height:1.7;flex:1;}
+.ci-f{font-size:clamp(9px,1vw,12px);background:#E3F2FD;border-radius:5px;padding:4px 7px;margin-top:5px;color:var(--b);font-weight:700;text-align:center;}
+/* Progress + Nav */
+#pg{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#1E88E5,#00BCD4);transition:width .3s;z-index:200;}
+#nv{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:rgba(255,255,255,.96);border-radius:26px;padding:6px 14px;box-shadow:0 2px 16px rgba(0,0,0,.2);z-index:100;align-items:center;}
+#nv button{background:var(--b);color:#fff;border:none;border-radius:16px;padding:5px 16px;font-size:12px;cursor:pointer;font-weight:700;transition:background .15s;font-family:inherit;}
+#nv button:hover{background:var(--b2);}
+#nv button:disabled{background:#B0BEC5;cursor:default;}
+#nn{min-width:86px;}
+#sn{font-size:12px;color:#555;min-width:52px;text-align:center;font-weight:600;}
+@keyframes fdin{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+.sl.on .hd{animation:fdin .3s ease;}
+</style>
+</head>
+<body>
+<div id="pg"></div>
+<div id="dk">
+
+<!-- ═══ SLIDE 0: COVER ═══ -->
+<div class="sl on" id="s0">
+  <div class="tag">📘 电工与电子技术基础 · 本科课程</div>
+  <h1>第 <em>2</em> 章<br>一阶线性电路的<em>暂态响应</em></h1>
+  <div class="desc">当电路"切换状态"那一刻，储能元件为何"抗拒"变化？<br>从电容充放电到电感通断，掌握动态电路的分析核心</div>
+  <div class="toc">
+    <div class="ti"><div class="nb">2.1</div>换路定则与初始值的确定</div>
+    <div class="ti"><div class="nb">2.2</div>RC 电路的暂态响应</div>
+    <div class="ti"><div class="nb">2.3</div>RL 电路的暂态响应</div>
+    <div class="ti"><div class="nb">2.4</div>三要素法与工程应用</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 1: 过渡过程 ═══ -->
+<div class="sl" id="s1">
+  <div class="hd"><span class="hd-tag">引入</span><span class="hd-ttl">⚡ 什么是电路的过渡过程？</span><span class="hd-r">Transient Process</span></div>
+  <div class="bd">
+    <div class="st">
+      <div class="yb">🔦 <b>生活场景：</b>打开手电筒，灯光不会"瞬间"达到最亮；充电宝插上时，充电电流不会立刻稳定。这段<b>从旧稳态过渡到新稳态的短暂过程</b>，就是电路的<b>暂态（过渡过程）</b>。</div>
+    </div>
+    <div class="st row">
+      <div class="col">
+        <div class="cd bf" style="flex:1;">
+          <div class="ct">⚖️ 稳态 vs 暂态</div>
+          <div class="cb"><b>稳态：</b>电压电流不随时间变化的平衡状态。DC稳态时：<b>电容→开路</b>（无电流），<b>电感→短路</b>（无电压降）。<br><br><b>暂态：</b>换路（开关动作、电源通断）后，从旧稳态向新稳态的中间过渡过程，持续时间通常为 3τ~5τ。</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="cd o of" style="flex:1;">
+          <div class="ct o">🤔 为什么存在暂态？</div>
+          <div class="cb"><b>根本原因：</b>储能元件中的能量不能突变！<br>• 电容储电场能 W = ½Cu²，电容电压不能突变<br>• 电感储磁场能 W = ½Li²，电感电流不能突变<br><br>能量需要时间积累或释放，这就是暂态的物理本质。纯电阻电路中无储能，故无暂态。</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="sw" style="flex:1;">
+          <svg viewBox="0 0 200 155" xmlns="http://www.w3.org/2000/svg">
+            <line x1="15" y1="128" x2="190" y2="128" stroke="#999" stroke-width="1.5"/>
+            <line x1="15" y1="8" x2="15" y2="131" stroke="#999" stroke-width="1.5"/>
+            <text x="192" y="132" font-size="9" fill="#999">t</text>
+            <text x="3" y="12" font-size="8" fill="#999">f</text>
+            <line x1="65" y1="8" x2="65" y2="128" stroke="#ccc" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="52" y="141" font-size="8" fill="#888">换路t=0</text>
+            <line x1="15" y1="110" x2="65" y2="110" stroke="#1565C0" stroke-width="2.5"/>
+            <text x="17" y="105" font-size="8" fill="#1565C0">稳态1</text>
+            <path d="M65,110 C78,110 88,60 103,38 C118,18 134,12 155,11 C170,10 182,10 188,10" fill="none" stroke="#FF8F00" stroke-width="2.5"/>
+            <text x="108" y="26" font-size="8" fill="#FF8F00" font-weight="bold">暂态</text>
+            <line x1="155" y1="11" x2="188" y2="11" stroke="#2E7D32" stroke-width="2.5"/>
+            <text x="158" y="9" font-size="8" fill="#2E7D32">稳态2</text>
+            <text x="17" y="128" font-size="8" fill="#2E7D32">f(∞)</text>
+            <text x="17" y="120" font-size="8" fill="#1565C0">f(0⁻)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="st">
+      <div class="yb">⚙️ <b>工程无处不在：</b><span class="pi">手机快充</span><span class="pi o">相机闪光灯</span><span class="pi g">心脏除颤仪</span><span class="pi p">继电器保护</span><span class="pi">电力系统切换</span><span class="pi o">信号整形滤波</span><span class="pi g">触摸屏检测</span><span class="pi p">ESD静电保护</span>——掌握暂态分析是电气工程师的核心能力！</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 2: 换路定则 ═══ -->
+<div class="sl" id="s2">
+  <div class="hd"><span class="hd-tag">2.1</span><span class="hd-ttl">换路定则与初始值的确定</span><span class="hd-r">Switching Laws</span></div>
+  <div class="bd">
+    <div class="st">
+      <div class="yb">📌 <b>换路定义：</b>电路状态的改变（开关断合、电源通断）统称换路。规定换路时刻 t=0，换路前一瞬间为 <b>t=0⁻</b>，换路后一瞬间为 <b>t=0⁺</b>。</div>
+    </div>
+    <div class="st row" style="flex:1.1;">
+      <div class="col">
+        <div class="cd bf" style="flex:1;">
+          <div class="ct">📏 定则一：电容电压不能突变</div>
+          <div class="cb">电容储存<b>电场能量</b> W=½Cu²，能量不能跃变：</div>
+          <div class="fb" style="margin:6px 0;font-size:clamp(14px,1.7vw,20px);">u<sub>C</sub>(0<sup>+</sup>) = u<sub>C</sub>(0<sup>-</sup>)</div>
+          <div class="cb">类比：水缸里的水不会瞬间消失也不会瞬间注满，需要时间。<br><br>⚠️ 只有 u<sub>C</sub> 不突变！电容<b>电流</b>可以突变（合闸瞬间可能很大）。</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="cd o of" style="flex:1;">
+          <div class="ct o">📏 定则二：电感电流不能突变</div>
+          <div class="cb">电感储存<b>磁场能量</b> W=½Li²，能量不能跃变：</div>
+          <div class="fb o" style="margin:6px 0;font-size:clamp(14px,1.7vw,20px);">i<sub>L</sub>(0<sup>+</sup>) = i<sub>L</sub>(0<sup>-</sup>)</div>
+          <div class="cb">类比：高速列车不能瞬间停止，速度（电流）有惯性。<br><br>⚠️ 只有 i<sub>L</sub> 不突变！电感<b>电压</b>可以突变（断路瞬间可能极高！）</div>
+        </div>
+      </div>
+    </div>
+    <div class="st row" style="flex:.95;">
+      <div class="col f15">
+        <div class="sec">🔍 求初始值三步法</div>
+        <ul class="nl">
+          <li><div class="n">1</div><div><b>画 t=0⁻ 等效图</b>（换路前稳态）：C→开路，L→短路，求 u<sub>C</sub>(0⁻) 或 i<sub>L</sub>(0⁻)</div></li>
+          <li><div class="n">2</div><div><b>用换路定则</b>：直接写 u<sub>C</sub>(0⁺)=u<sub>C</sub>(0⁻)，i<sub>L</sub>(0⁺)=i<sub>L</sub>(0⁻)</div></li>
+          <li><div class="n">3</div><div><b>画 t=0⁺ 等效图</b>：C→电压源（值=u<sub>C</sub>(0⁺)），L→电流源（值=i<sub>L</sub>(0⁺)），再用KVL/KCL求其余初始值</div></li>
+        </ul>
+      </div>
+      <div class="col">
+        <div class="cd g gf">
+          <div class="ct g">⚠️ 关键区别</div>
+          <div class="cb">
+            ✅ <b>u<sub>C</sub> 和 i<sub>L</sub></b> 换路前后不突变<br>
+            ❌ <b>其余量</b>（R电流、R电压、C电流、L电压）均<b>可以突变</b>！<br><br>
+            例：RC串联合闸，u<sub>C</sub>(0⁻)=0<br>
+            → u<sub>C</sub>(0⁺)=0（不变）<br>
+            → i(0⁺)=U₀/R（从0突变！）
+          </div>
+        </div>
+        <div class="yb" style="margin-top:5px;">💬 <span class="hl">口诀："C压L流不突变，其余电量随便变"</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 3: RC原理 ═══ -->
+<div class="sl" id="s3">
+  <div class="hd"><span class="hd-tag">2.2</span><span class="hd-ttl">RC 电路的暂态响应</span><span class="hd-r">RC Transient Response</span></div>
+  <div class="bd">
+    <div class="st row" style="flex:1.1;">
+      <div class="col">
+        <div class="sec">📐 电路图与推导</div>
+        <div class="sw" style="height:110px;">
+          <svg viewBox="0 0 265 110" xmlns="http://www.w3.org/2000/svg">
+            <line x1="25" y1="16" x2="225" y2="16" stroke="#333" stroke-width="1.8"/>
+            <line x1="25" y1="94" x2="225" y2="94" stroke="#333" stroke-width="1.8"/>
+            <line x1="25" y1="16" x2="25" y2="36" stroke="#333" stroke-width="1.8"/>
+            <line x1="25" y1="74" x2="25" y2="94" stroke="#333" stroke-width="1.8"/>
+            <line x1="16" y1="36" x2="34" y2="36" stroke="#1565C0" stroke-width="2.5"/>
+            <line x1="18" y1="47" x2="32" y2="47" stroke="#1565C0" stroke-width="1.5"/>
+            <line x1="18" y1="58" x2="32" y2="58" stroke="#1565C0" stroke-width="2.5"/>
+            <line x1="16" y1="68" x2="34" y2="68" stroke="#1565C0" stroke-width="1.5"/>
+            <text x="38" y="57" font-size="12" fill="#1565C0" font-weight="bold">U₀</text>
+            <circle cx="82" cy="16" r="2.5" fill="#555"/><circle cx="106" cy="16" r="2.5" fill="#555"/>
+            <line x1="82" y1="16" x2="103" y2="8" stroke="#FF8F00" stroke-width="2"/>
+            <text x="83" y="6" font-size="9" fill="#FF8F00" font-weight="bold">S  t=0闭合</text>
+            <rect x="132" y="8" width="40" height="16" rx="3" fill="none" stroke="#E53935" stroke-width="1.8"/>
+            <text x="144" y="21" font-size="12" fill="#E53935" font-weight="bold">R</text>
+            <line x1="196" y1="16" x2="196" y2="44" stroke="#333" stroke-width="1.8"/>
+            <line x1="185" y1="44" x2="207" y2="44" stroke="#2E7D32" stroke-width="2.5"/>
+            <line x1="185" y1="55" x2="207" y2="55" stroke="#2E7D32" stroke-width="2.5"/>
+            <line x1="196" y1="55" x2="196" y2="94" stroke="#333" stroke-width="1.8"/>
+            <text x="212" y="52" font-size="12" fill="#2E7D32" font-weight="bold">C</text>
+            <text x="55" y="13" font-size="9" fill="#FF8F00">→ i</text>
+            <text x="172" y="86" font-size="9" fill="#2E7D32">↑ u<tspan font-size="7">C</tspan></text>
+          </svg>
+        </div>
+        <div class="cb" style="font-size:clamp(10px,1.05vw,13px);line-height:1.8;background:#F4F6FA;border-radius:7px;padding:7px 10px;margin-top:5px;">
+          KVL：U₀ = Ri + u<sub>C</sub> = <b>RC</b>·(du<sub>C</sub>/dt) + u<sub>C</sub><br>
+          令 <b>τ = RC</b>（时间常数），解一阶ODE：
+        </div>
+        <div class="fb" style="margin-top:5px;font-size:clamp(12px,1.35vw,16px);">u<sub>C</sub>(t) = U₀(1 − e<sup>−t/τ</sup>)，t≥0</div>
+        <div class="fb o" style="margin-top:5px;font-size:clamp(12px,1.35vw,16px);">i(t) = (U₀/R)·e<sup>−t/τ</sup>，t≥0</div>
+      </div>
+      <div class="col">
+        <div class="sec">📊 充电波形与关键数据</div>
+        <div class="sw" style="flex:1;">
+          <svg viewBox="0 0 260 130" xmlns="http://www.w3.org/2000/svg">
+            <line x1="22" y1="112" x2="252" y2="112" stroke="#999" stroke-width="1.5"/><line x1="22" y1="8" x2="22" y2="115" stroke="#999" stroke-width="1.5"/>
+            <text x="254" y="116" font-size="9" fill="#999">t</text>
+            <line x1="62" y1="108" x2="62" y2="115" stroke="#999" stroke-width="1"/><text x="57" y="123" font-size="8" fill="#999">τ</text>
+            <line x1="102" y1="108" x2="102" y2="115" stroke="#999" stroke-width="1"/><text x="95" y="123" font-size="8" fill="#999">2τ</text>
+            <line x1="142" y1="108" x2="142" y2="115" stroke="#999" stroke-width="1"/><text x="135" y="123" font-size="8" fill="#999">3τ</text>
+            <line x1="182" y1="108" x2="182" y2="115" stroke="#999" stroke-width="1"/><text x="175" y="123" font-size="8" fill="#999">4τ</text>
+            <line x1="222" y1="108" x2="222" y2="115" stroke="#999" stroke-width="1"/><text x="215" y="123" font-size="8" fill="#999">5τ</text>
+            <line x1="22" y1="10" x2="248" y2="10" stroke="#FF8F00" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="24" y="9" font-size="8" fill="#FF8F00">U₀</text>
+            <path d="M22,112 C34,112 44,82 62,54 C80,28 92,18 112,13 C132,10 152,9 185,9 C210,9 234,9 248,9" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
+            <text x="218" y="8" font-size="8" fill="#2E7D32" font-weight="bold">u<tspan font-size="6">C</tspan></text>
+            <path d="M22,10 C34,10 44,38 62,62 C80,86 92,98 112,104 C132,108 152,110 185,111 C210,112 234,112 248,112" fill="none" stroke="#1565C0" stroke-width="2" stroke-dasharray="5,3"/>
+            <text x="24" y="9" font-size="8" fill="#1565C0"/>
+            <text x="24" y="22" font-size="8" fill="#1565C0" font-weight="bold">i</text>
+            <line x1="22" y1="54" x2="62" y2="54" stroke="#E53935" stroke-width="1" stroke-dasharray="2,2"/>
+            <line x1="62" y1="54" x2="62" y2="112" stroke="#E53935" stroke-width="1" stroke-dasharray="2,2"/>
+            <circle cx="62" cy="54" r="4" fill="#E53935"/>
+            <text x="24" y="51" font-size="8" fill="#E53935">63.2%</text>
+          </svg>
+        </div>
+        <table style="margin-top:5px;">
+          <tr><th>t</th><th>u<sub>C</sub>/U₀</th><th>i·R/U₀</th><th>含义</th></tr>
+          <tr><td>0</td><td>0%</td><td>100%</td><td>合闸瞬间</td></tr>
+          <tr><td>τ</td><td><b>63.2%</b></td><td>36.8%</td><td>时间常数点</td></tr>
+          <tr><td>3τ</td><td>95.0%</td><td>5.0%</td><td>基本充完</td></tr>
+          <tr><td>5τ</td><td><b>99.3%≈稳态</b></td><td>0.7%</td><td>工程认定结束</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="st">
+      <div class="cd g gf">
+        <div class="ct g">⏱ τ = RC 的物理意义 ＆ 能量分析</div>
+        <div class="cb">τ 越大（R↑ 或 C↑）→ 充电越慢；τ 越小 → 充电越快。无论 R 大小，充电过程中：电源总供能 = CU₀²，其中<b>一半</b>（½CU₀²）储入电容，另<b>一半</b>（½CU₀²）消耗在电阻上。这与 R 的大小<b>无关</b>！（R大则电流小但时间长，两者乘积不变）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 4: RC 交互 ═══ -->
+<div class="sl" id="s4">
+  <div class="hd"><span class="hd-tag">互动</span><span class="hd-ttl">🎮 RC充电——交互演示（固定时间轴，直观看曲线变化）</span><span class="hd-r">拖动滑块</span></div>
+  <div class="bd">
+    <div class="row" style="flex:1;">
+      <div class="col f15">
+        <div class="cwrap"><canvas id="rcCvs"></canvas></div>
+      </div>
+      <div class="col f07">
+        <div class="dp">
+          <label>R = <b id="rD">10</b> kΩ</label>
+          <input type="range" id="rS" min="1" max="50" value="10" oninput="rcUpdate()">
+          <label>C = <b id="cD">100</b> μF</label>
+          <input type="range" id="cS" min="10" max="500" value="100" oninput="rcUpdate()">
+          <label>U₀ = <b id="uD">10</b> V</label>
+          <input type="range" id="uS" min="1" max="20" value="10" oninput="rcUpdate()">
+          <div style="border-top:1px solid #ddd;padding-top:7px;margin-top:2px;">
+            <div class="dv">τ = <span id="rcT">1.00</span> s</div>
+            <div class="ds">5τ = <span id="rc5T">5.00</span> s（暂态结束）</div>
+            <div class="ds" style="margin-top:3px;">时间轴固定 0~5s，τ变化→曲线形状变化</div>
+          </div>
+          <div class="fb med">u<sub>C</sub>=U₀(1−e<sup>−t/τ</sup>)</div>
+          <div class="fb o med">i=(U₀/R)e<sup>−t/τ</sup></div>
+        </div>
+      </div>
+    </div>
+    <div class="yb" style="flex-shrink:0;">
+      💡 <b>时间轴固定 0~5秒：</b> R↑ 或 C↑ → τ增大 → 曲线更<b>平缓</b>（慢充）｜ R↓ 或 C↓ → τ减小 → 曲线更<b>陡峭</b>（快充）｜ <b style="color:#2E7D32">绿实线</b>=u<sub>C</sub>(t)，<b style="color:#1565C0">蓝虚线</b>=i(t)（归一化），<b style="color:#E53935">红点</b>=63.2%标记
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 5: RL原理 ═══ -->
+<div class="sl" id="s5">
+  <div class="hd"><span class="hd-tag">2.3</span><span class="hd-ttl">RL 电路的暂态响应</span><span class="hd-r">RL Transient Response</span></div>
+  <div class="bd">
+    <div class="st row" style="flex:1.05;">
+      <div class="col">
+        <div class="sec">📐 电路方程与响应公式</div>
+        <div class="sw" style="height:100px;">
+          <svg viewBox="0 0 265 100" xmlns="http://www.w3.org/2000/svg">
+            <line x1="25" y1="14" x2="220" y2="14" stroke="#333" stroke-width="1.8"/>
+            <line x1="25" y1="86" x2="220" y2="86" stroke="#333" stroke-width="1.8"/>
+            <line x1="25" y1="14" x2="25" y2="33" stroke="#333" stroke-width="1.8"/><line x1="25" y1="67" x2="25" y2="86" stroke="#333" stroke-width="1.8"/>
+            <line x1="16" y1="33" x2="34" y2="33" stroke="#1565C0" stroke-width="2.5"/>
+            <line x1="18" y1="43" x2="32" y2="43" stroke="#1565C0" stroke-width="1.5"/>
+            <line x1="18" y1="53" x2="32" y2="53" stroke="#1565C0" stroke-width="2.5"/>
+            <line x1="16" y1="63" x2="34" y2="63" stroke="#1565C0" stroke-width="1.5"/>
+            <text x="38" y="52" font-size="12" fill="#1565C0" font-weight="bold">U₀</text>
+            <circle cx="78" cy="14" r="2.5" fill="#555"/><circle cx="100" cy="14" r="2.5" fill="#555"/>
+            <line x1="78" y1="14" x2="97" y2="6" stroke="#FF8F00" stroke-width="2"/>
+            <text x="79" y="5" font-size="9" fill="#FF8F00" font-weight="bold">S</text>
+            <rect x="126" y="6" width="38" height="16" rx="3" fill="none" stroke="#E53935" stroke-width="1.8"/>
+            <text x="137" y="19" font-size="12" fill="#E53935" font-weight="bold">R</text>
+            <path d="M178,14 Q182,4 186,14 Q190,4 194,14 Q198,4 202,14 Q206,4 210,14" fill="none" stroke="#6A1B9A" stroke-width="2.5"/>
+            <text x="200" y="34" font-size="12" fill="#6A1B9A" font-weight="bold">L</text>
+            <line x1="178" y1="14" x2="178" y2="86" stroke="#333" stroke-width="1.8"/>
+            <line x1="210" y1="14" x2="218" y2="14" stroke="#333" stroke-width="1.8"/>
+            <line x1="218" y1="14" x2="218" y2="86" stroke="#333" stroke-width="1.8"/>
+            <text x="52" y="11" font-size="9" fill="#FF8F00">→ i<tspan font-size="7">L</tspan></text>
+          </svg>
+        </div>
+        <div class="cb" style="font-size:clamp(10px,1.05vw,13px);line-height:1.75;background:#F4F6FA;border-radius:7px;padding:7px 10px;margin-top:4px;">
+          KVL：U₀ = i<sub>L</sub>R + L·(di<sub>L</sub>/dt)，令 <b>τ = L/R</b>，解得：
+        </div>
+        <div class="fb p" style="margin-top:5px;font-size:clamp(12px,1.35vw,16px);">i<sub>L</sub>(t) = (U₀/R)·(1−e<sup>−t/τ</sup>)，t≥0</div>
+        <div class="fb o" style="margin-top:5px;font-size:clamp(12px,1.35vw,16px);">u<sub>L</sub>(t) = U₀·e<sup>−t/τ</sup>，t≥0</div>
+      </div>
+      <div class="col">
+        <div class="cd g gf" style="flex:.6;">
+          <div class="ct g">🚂 电感的"惯性"——危险的断路！</div>
+          <div class="cb">电感电流不能突变。若强行断路，i<sub>L</sub> 必须瞬间变0，则：<br><b>u<sub>L</sub> = L·(di/dt) → ∞</b>（理论上无穷大）<br>实际可高达<b>数百至数千伏</b>，击穿驱动管！<br><br><b>工程保护：</b><br>①续流二极管（反向并联）→ 断电时正向导通，为i<sub>L</sub>提供泄放通路<br>②TVS瞬态抑制二极管 → 钳位保护<br>③RC缓冲（Snubber）→ 吸收能量</div>
+        </div>
+        <div class="cd bf" style="flex:.4;">
+          <div class="ct">RC与RL对偶关系</div>
+          <table style="margin-top:4px;">
+            <tr><th>RC</th><th>RL</th></tr>
+            <tr><td>τ = RC</td><td>τ = L/R</td></tr>
+            <tr><td>u<sub>C</sub>不突变</td><td>i<sub>L</sub>不突变</td></tr>
+            <tr><td>稳态C开路</td><td>稳态L短路</td></tr>
+            <tr><td>R↑→τ↑（慢）</td><td>R↑→τ↓（快）</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="st">
+      <div class="yb">🔑 <b>对偶性：</b>RC与RL公式完全对称——把RC中的 u<sub>C</sub> 换成 i<sub>L</sub>，把"C开路稳态"换成"L短路稳态"，把"τ=RC"换成"τ=L/R"，两套公式一一对应。<span class="pi g">掌握一个，另一个自然就会！</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 6: RL 交互 ═══ -->
+<div class="sl" id="s6">
+  <div class="hd"><span class="hd-tag">互动</span><span class="hd-ttl">🎮 RL通电——交互演示（固定时间轴，直观看曲线变化）</span><span class="hd-r">拖动滑块</span></div>
+  <div class="bd">
+    <div class="row" style="flex:1;">
+      <div class="col f15">
+        <div class="cwrap"><canvas id="rlCvs"></canvas></div>
+      </div>
+      <div class="col f07">
+        <div class="dp">
+          <label>R = <b id="rlRD">100</b> Ω</label>
+          <input type="range" id="rlRS" min="10" max="500" value="100" oninput="rlUpdate()">
+          <label>L = <b id="rlLD">200</b> mH</label>
+          <input type="range" id="rlLS" min="10" max="1000" value="200" oninput="rlUpdate()">
+          <label>U₀ = <b id="rlUD">10</b> V</label>
+          <input type="range" id="rlUS" min="1" max="20" value="10" oninput="rlUpdate()">
+          <div style="border-top:1px solid #ddd;padding-top:7px;margin-top:2px;">
+            <div class="dv">τ = <span id="rlTV">2.00 ms</span></div>
+            <div class="ds">5τ = <span id="rl5TV">10.00 ms</span>（暂态结束）</div>
+            <div class="ds" style="margin-top:3px;">时间轴固定 0~10ms，τ变化→曲线形状变化</div>
+          </div>
+          <div class="fb p med">i<sub>L</sub>=(U₀/R)(1−e<sup>−t/τ</sup>)</div>
+          <div class="fb o med">u<sub>L</sub>=U₀·e<sup>−t/τ</sup></div>
+        </div>
+      </div>
+    </div>
+    <div class="yb" style="flex-shrink:0;">
+      💡 <b>时间轴固定 0~10ms：</b> R↑ → τ=L/R↓ → 电流上升<b>更快</b> ｜ L↑ → τ↑ → 电流上升<b>更慢</b> ｜ <b style="color:#6A1B9A">紫实线</b>=i<sub>L</sub>（上升），<b style="color:#FF8F00">橙虚线</b>=u<sub>L</sub>（衰减），注意τ变化如何改变曲线形状！
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 7: 三要素法 ═══ -->
+<div class="sl" id="s7">
+  <div class="hd"><span class="hd-tag">核心</span><span class="hd-ttl">🎯 三要素法——一阶电路通用解法</span><span class="hd-r">Three-Element Method</span></div>
+  <div class="bd">
+    <div class="st row" style="flex:1;">
+      <div class="col f15">
+        <div class="cd bf">
+          <div class="ct" style="font-size:clamp(13px,1.5vw,17px);">📐 三要素通用公式</div>
+          <div class="fb big" style="margin:8px 0;">f(t) = f(∞) + [f(0<sup>+</sup>)−f(∞)]·e<sup>−t/τ</sup></div>
+          <div class="cb">f(t) 可以是电路中<b>任意</b>一条支路的电压或电流。只要求出三个量，就能写出完整解！<br>• t=0⁺：f = f(0⁺) ✓ &nbsp;&nbsp;• t→∞：f = f(∞) ✓<br>• 中间过程按 e<sup>-t/τ</sup> 指数变化</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="cd o of" style="flex:1;">
+          <div class="ct o">① 初始值 f(0⁺)</div>
+          <div class="cb">换路定则 + t=0⁺等效图。C→电压源u<sub>C</sub>(0⁺)，L→电流源i<sub>L</sub>(0⁺)</div>
+        </div>
+        <div class="cd g gf" style="flex:1;">
+          <div class="ct g">② 稳态值 f(∞)</div>
+          <div class="cb">t→∞时C→开路，L→短路，用欧姆/KVL求各支路稳态值</div>
+        </div>
+        <div class="cd p pf" style="flex:1;">
+          <div class="ct p">③ 时间常数 τ</div>
+          <div class="cb">独立源置零后，从储能元件两端看入的戴维南等效电阻R₀<br>RC: τ=R₀C　RL: τ=L/R₀</div>
+        </div>
+      </div>
+    </div>
+    <div class="st row" style="flex:1.1;">
+      <div class="col f15">
+        <div class="sec">📝 完整例题（含复杂网络）</div>
+        <div class="cb" style="font-size:clamp(10px,1.1vw,13px);line-height:1.85;background:#F4F6FA;border-radius:8px;padding:9px 12px;">
+          <b>已知：</b>U₀=12V，R₁=4kΩ，R₂=8kΩ，C=300μF，t=0合闸，u<sub>C</sub>(0⁻)=0<br>
+          <b>① u<sub>C</sub>(0⁺)</b>=u<sub>C</sub>(0⁻)=<b>0V</b>（换路定则）<br>
+          &nbsp;&nbsp;&nbsp;此时C短路：i(0⁺)=12/(4k+8k)=<b>1mA</b>（发生突变）<br>
+          <b>② u<sub>C</sub>(∞)</b>：C→开路，无电流<br>
+          &nbsp;&nbsp;&nbsp;u<sub>C</sub>(∞)=12×8/(4+8)=<b>8V</b>（分压定理）<br>
+          <b>③ τ：</b>U₀短路后，C两端看R₁//R₂=4k×8k/12k=8/3 kΩ<br>
+          &nbsp;&nbsp;&nbsp;τ=(8/3)×10³×300×10⁻⁶=<b>0.8s</b>
+        </div>
+        <div class="fb" style="margin-top:6px;font-size:clamp(12px,1.3vw,15px);">u<sub>C</sub>(t)=8+(0−8)e<sup>−t/0.8</sup>=<b>8(1−e<sup>−1.25t</sup>) V</b></div>
+      </div>
+      <div class="col">
+        <div class="sec">✅ 五步解题流程</div>
+        <ul class="nl">
+          <li><div class="n">1</div><div>画 t=0⁻ 稳态图，C开路L短路，求储能初值</div></li>
+          <li><div class="n">2</div><div>用换路定则写 f(0⁺)，画 t=0⁺ 等效图</div></li>
+          <li><div class="n">3</div><div>画 t=∞ 稳态图，求 f(∞)</div></li>
+          <li><div class="n">4</div><div>独立源置零，从储能元件端求 R₀，得 τ</div></li>
+          <li><div class="n">5</div><div>代入公式：f(t)=f(∞)+[f(0⁺)−f(∞)]e<sup>−t/τ</sup></div></li>
+        </ul>
+        <div class="yb" style="margin-top:6px;"><span class="hl">三要素法通杀所有一阶线性直流电路！无论多复杂均可。</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 8: 工程应用 ═══ -->
+<div class="sl" id="s8">
+  <div class="hd"><span class="hd-tag">2.4</span><span class="hd-ttl">一阶电路工程应用——6大典型案例详解</span><span class="hd-r">Applications</span></div>
+  <div class="bd">
+    <div class="st cg" style="flex:1.05;">
+      <div class="ci">
+        <div class="ci-ic">📱</div>
+        <div class="ci-t">手机快充技术</div>
+        <div class="ci-b">普通5W充电：等效内阻大，τ=R·C大，充满需3h以上。<b>快充（PD/VOOC协议）</b>核心是：① 协商提升电压（5V→9V/12V/20V）；② 优化电池等效电路降低内阻，使τ减小，相同时间存入更多能量。BMS（电池管理芯片）实时监测RC暂态曲线，精确控制充电电流防止过热过充，同时在每个充电阶段切换参数使效率最大化。</div>
+        <div class="ci-f">τ=R<sub>内阻</sub>×C<sub>等效</sub>；降R提压→加速充电；PD 240W: 48V×5A</div>
+      </div>
+      <div class="ci">
+        <div class="ci-ic">📸</div>
+        <div class="ci-t">相机闪光灯系统</div>
+        <div class="ci-b"><b>充电阶段（大τ）：</b>升压模块将5V电池升至300~400V，通过数百kΩ限流电阻对500μF大电容缓慢充电。储能W=½CV²=½×500μ×350²≈30J，充满需4~6秒（指示灯由红变绿）。<br><b>放电阶段（小τ）：</b>触发氙气管导通，等效电阻仅2~5Ω，时间常数τ=RC≈1ms，在<b>1~2ms</b>内全部能量化为强光。峰值功率≈30J/1ms=<b>30,000W</b>！</div>
+        <div class="ci-f">充：τ=500kΩ×500μF=250s；放：τ=3Ω×500μF≈1.5ms</div>
+      </div>
+      <div class="ci">
+        <div class="ci-ic">💓</div>
+        <div class="ci-t">心脏除颤仪</div>
+        <div class="ci-b">除颤仪内置大电容充至<b>700~2000V</b>，储能<b>200~360J</b>。放电时通过胸部电极施加双相截断指数波形（BTE波形），持续<b>4~12ms</b>，峰值电流30~40A，使全部心肌细胞同步去极化，强制心脏"复位"恢复正常节律。RC时间常数精确设计：τ过小→电流峰值过高伤心肌；τ过大→能量无法充分传递。双相波较单相波可减少所需能量约50%。</div>
+        <div class="ci-f">τ≈5ms；I<sub>峰</sub>=U/R≈30A；总能量360J</div>
+      </div>
+    </div>
+    <div class="st cg" style="flex:1.05;">
+      <div class="ci">
+        <div class="ci-ic">🎛️</div>
+        <div class="ci-t">微分电路（边沿检测）</div>
+        <div class="ci-b">条件：<b>τ &lt;&lt; T</b>（T为信号周期）。电路：R极小，从R两端取输出。输入方波时，每次跳变处电容来不及充电，R上有短暂大电压；平坦段电容已充满，R上电压≈0。<br>输出：方波→<b>正负尖脉冲对</b>，精确对应上升沿和下降沿。<br>应用：D触发器边沿触发、数字电路时钟提取、CNC脉冲编码器解码、开关电源零交叉检测。</div>
+        <div class="ci-f">u<sub>R</sub>≈τ·du<sub>in</sub>/dt；条件：τ≤T/10</div>
+      </div>
+      <div class="ci">
+        <div class="ci-ic">🔉</div>
+        <div class="ci-t">积分/低通滤波电路</div>
+        <div class="ci-b">条件：<b>τ &gt;&gt; T</b>。从C两端取输出。高频信号在每半周内τ远大于T，电容充电极少，输出几乎不变；低频信号τ≈T，充放电明显，信号能通过。<br>截止频率 <b>f<sub>c</sub>=1/(2πRC)</b>，高于f<sub>c</sub>的频率被衰减。<br>应用：音频高频噪声去除、DAC输出平滑、模拟传感器信号去抖、ADC前抗混叠滤波、WiFi/蓝牙RF链路低通滤波。</div>
+        <div class="ci-f">f<sub>c</sub>=1/(2πRC)；u<sub>out</sub>≈(1/τ)∫u<sub>in</sub>dt</div>
+      </div>
+      <div class="ci">
+        <div class="ci-ic">⚡</div>
+        <div class="ci-t">继电器/电感断路保护</div>
+        <div class="ci-b">继电器线圈是典型电感（L=10mH~几H）。断开开关瞬间，i<sub>L</sub>必须在极短时间变为0：<br>u<sub>L</sub>=L×(ΔI/Δt)，若Δt=1μs，L=100mH，I₀=0.1A，则u<sub>L</sub>=10,000V！<br><b>工程方案：</b><br>① 续流二极管（TVS/肖特基）：反向截止，断电时正向导通，将高压钳位在0.7V<br>② RC Snubber：并联R+C串联支路，吸收能量，保护驱动MOSFET<br>③ 压敏电阻（MOV）：超过阈值电压自动导通泄放</div>
+        <div class="ci-f">无保护：u<sub>峰</sub>=L×ΔI/Δt；加二极管：钳位至V<sub>f</sub>&lt;1V</div>
+      </div>
+    </div>
+    <div class="st">
+      <div class="yb" style="padding:7px 12px;">🌐 <b>更多应用：</b><span class="pi">示波器探头10:1补偿</span><span class="pi o">UPS软启动防涌流</span><span class="pi g">静电保护ESD</span><span class="pi p">触摸屏互容检测</span><span class="pi">超声波发生器</span><span class="pi o">电机软启动</span><span class="pi g">延时继电器</span><span class="pi p">脉冲宽度调制PWM</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 9: 总结 ═══ -->
+<div class="sl" id="s9">
+  <div class="hd"><span class="hd-tag">总结</span><span class="hd-ttl">📋 第二章知识总结与作业</span><span class="hd-r">Summary</span></div>
+  <div class="bd">
+    <div class="st row" style="flex:1.2;">
+      <div class="col">
+        <div class="sec">🗺️ 知识框架</div>
+        <div class="sw" style="flex:1;">
+          <svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+            <rect x="100" y="76" width="100" height="34" rx="7" fill="#1565C0"/>
+            <text x="150" y="98" text-anchor="middle" font-size="11" fill="white" font-weight="bold">一阶电路暂态</text>
+            <line x1="100" y1="86" x2="40" y2="32" stroke="#1565C0" stroke-width="1.5"/>
+            <rect x="4" y="12" width="74" height="32" rx="6" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+            <text x="41" y="28" text-anchor="middle" font-size="9" fill="#0D47A1" font-weight="bold">换路定则</text>
+            <text x="41" y="39" text-anchor="middle" font-size="8" fill="#555">uC/iL 不突变</text>
+            <line x1="122" y1="76" x2="78" y2="152" stroke="#FF8F00" stroke-width="1.5"/>
+            <rect x="22" y="150" width="90" height="30" rx="6" fill="#FFF8E1" stroke="#FF8F00" stroke-width="1.5"/>
+            <text x="67" y="166" text-anchor="middle" font-size="9" fill="#BF360C" font-weight="bold">RC暂态 τ=RC</text>
+            <text x="67" y="176" text-anchor="middle" font-size="8" fill="#555">uC上升 i衰减</text>
+            <line x1="178" y1="76" x2="222" y2="152" stroke="#6A1B9A" stroke-width="1.5"/>
+            <rect x="188" y="150" width="90" height="30" rx="6" fill="#F3E5F5" stroke="#6A1B9A" stroke-width="1.5"/>
+            <text x="233" y="166" text-anchor="middle" font-size="9" fill="#4A148C" font-weight="bold">RL暂态 τ=L/R</text>
+            <text x="233" y="176" text-anchor="middle" font-size="8" fill="#555">iL上升 uL衰减</text>
+            <line x1="200" y1="86" x2="260" y2="32" stroke="#2E7D32" stroke-width="1.5"/>
+            <rect x="222" y="12" width="74" height="32" rx="6" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+            <text x="259" y="28" text-anchor="middle" font-size="9" fill="#1B5E20" font-weight="bold">三要素法</text>
+            <text x="259" y="39" text-anchor="middle" font-size="8" fill="#555">f(0⁺), f(∞), τ</text>
+            <line x1="150" y1="110" x2="150" y2="150" stroke="#E53935" stroke-width="1.5"/>
+            <rect x="106" y="150" width="88" height="30" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+            <text x="150" y="167" text-anchor="middle" font-size="9" fill="#B71C1C" font-weight="bold">工程应用</text>
+            <text x="150" y="176" text-anchor="middle" font-size="8" fill="#555">滤波·充放电·保护</text>
+          </svg>
+        </div>
+      </div>
+      <div class="col f15">
+        <div class="sec">📌 重点公式一览</div>
+        <div class="fb" style="margin-bottom:5px;font-size:clamp(11px,1.2vw,14px);">三要素：f(t) = f(∞) + [f(0⁺)−f(∞)]·e<sup>−t/τ</sup></div>
+        <div class="fb o" style="margin-bottom:5px;font-size:clamp(11px,1.2vw,14px);">RC充电：u<sub>C</sub>=U₀(1−e<sup>−t/τ</sup>)；i=(U₀/R)e<sup>−t/τ</sup>；τ=RC</div>
+        <div class="fb p" style="font-size:clamp(11px,1.2vw,14px);">RL通电：i<sub>L</sub>=(U₀/R)(1−e<sup>−t/τ</sup>)；u<sub>L</sub>=U₀e<sup>−t/τ</sup>；τ=L/R</div>
+        <div class="cd g gf" style="margin-top:6px;">
+          <div class="ct g">✅ 掌握目标</div>
+          <div class="cb" style="line-height:1.9;">
+            □ 理解暂态的物理原因（储能元件能量不突变）<br>
+            □ 换路定则求初始值 u<sub>C</sub>(0⁺)、i<sub>L</sub>(0⁺)<br>
+            □ 理解 τ 的物理意义，会求复杂电路的 τ<br>
+            □ 熟练用三要素法求任意一阶响应<br>
+            □ 微分/积分电路的条件与应用场景
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="st cd o of" style="flex-shrink:0;">
+      <div class="ct o">📝 课后作业</div>
+      <div class="cb"><b>基础题：</b>教材P98 第2、4、6题（换路定则+初始值） ｜ <b>提高题：</b>教材P105 第8、10题（三要素法） ｜ <b>思考题：</b>为何RC充电时无论R多大，电阻消耗的能量总等于½CU₀²？ ｜ <b>下次课：</b>例题集中讲解+随堂测验（三要素法）</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /dk -->
+<div id="nv">
+  <button id="pv" onclick="prev()" disabled>◀ 上一页</button>
+  <span id="sn">1 / 10</span>
+  <button id="nn" onclick="next()">继续 ▶</button>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  NAVIGATION ENGINE
+// ══════════════════════════════════════
+const slides = Array.from(document.querySelectorAll('.sl'));
+const N_SL = slides.length;
+let cur = 0;
+const revealed = slides.map(() => 0);
+
+function getSteps(i){ return slides[i].querySelectorAll('.st'); }
+
+function updateNav(){
+  const steps = getSteps(cur);
+  const done = steps.length === 0 || revealed[cur] >= steps.length;
+  const last = cur === N_SL - 1;
+  document.getElementById('pv').disabled = (cur === 0);
+  document.getElementById('sn').textContent = `${cur+1} / ${N_SL}`;
+  document.getElementById('pg').style.width = `${(cur+1)/N_SL*100}%`;
+  const btn = document.getElementById('nn');
+  if(done && last){ btn.textContent='结束 ✓'; btn.disabled=true; }
+  else if(done)    { btn.textContent='下一页 ▶'; btn.disabled=false; }
+  else             { btn.textContent='继续 ▶'; btn.disabled=false; }
+}
+
+function revealOne(){
+  const steps = getSteps(cur);
+  if(revealed[cur] < steps.length){
+    steps[revealed[cur]].classList.add('vis');
+    revealed[cur]++;
+  }
+}
+
+function next(){
+  const steps = getSteps(cur);
+  const done = steps.length === 0 || revealed[cur] >= steps.length;
+  if(!done){ revealOne(); updateNav(); }
+  else goTo(cur+1);
+}
+function prev(){ goTo(cur-1); }
+
+function goTo(i){
+  if(i<0||i>=N_SL) return;
+  slides[cur].classList.remove('on');
+  cur = i;
+  slides[cur].classList.add('on');
+  // Auto-reveal first step
+  if(getSteps(cur).length > 0 && revealed[cur] === 0) revealOne();
+  // Redraw canvases after layout settles
+  if(cur===3) setTimeout(rcDraw, 60);
+  if(cur===5) setTimeout(rlDraw, 60);
+  updateNav();
+}
+
+document.addEventListener('keydown', e=>{
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){ e.preventDefault(); next(); }
+  if(['ArrowLeft','ArrowUp'].includes(e.key)){ e.preventDefault(); prev(); }
+});
+updateNav();
+
+// ══════════════════════════════════════
+//  CANVAS DRAW HELPERS
+// ══════════════════════════════════════
+function initCtx(canvas){
+  const c = canvas.parentElement;
+  const W = c.clientWidth, H = c.clientHeight;
+  if(W < 4 || H < 4) return null;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#F6F9FF'; ctx.fillRect(0,0,W,H);
+  return {ctx,W,H};
+}
+
+function grid(ctx,W,H,pad){
+  const {l,r,t,b}=pad, cW=W-l-r, cH=H-t-b;
+  ctx.strokeStyle='#E2E8F4'; ctx.lineWidth=1;
+  for(let k=0;k<=6;k++){ const x=l+k*cW/6; ctx.beginPath();ctx.moveTo(x,t);ctx.lineTo(x,t+cH);ctx.stroke(); }
+  for(let k=0;k<=4;k++){ const y=t+k*cH/4; ctx.beginPath();ctx.moveTo(l,y);ctx.lineTo(l+cW,y);ctx.stroke(); }
+  ctx.strokeStyle='#888'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(l,t); ctx.lineTo(l,t+cH); ctx.lineTo(l+cW,t+cH); ctx.stroke();
+}
+
+function tauMark(ctx,W,H,pad,tau,tMax){
+  const {l,r,t,b}=pad, cW=W-l-r, cH=H-t-b;
+  const fsize = Math.max(10, Math.round(W*0.024));
+  ctx.font=`${fsize}px sans-serif`; ctx.textAlign='center'; ctx.fillStyle='#AAB8CC';
+  [1,2,3,4,5].forEach(k=>{
+    const x=l+(k*tau/tMax)*cW;
+    if(x>l+2 && x<l+cW-2){
+      ctx.strokeStyle='#D8E2F0'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(x,t); ctx.lineTo(x,t+cH); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='#AAB8CC'; ctx.fillText(`${k}τ`,x,t+cH+14);
+    }
+  });
+}
+
+// ══════════════════════════════════════
+//  RC CANVAS — FIXED TIME AXIS: 0~5s
+// ══════════════════════════════════════
+const RC_TMAX = 5.0; // seconds — fixed axis
+
+function rcGet(){
+  return {
+    R: parseFloat(document.getElementById('rS').value)*1000,
+    C: parseFloat(document.getElementById('cS').value)*1e-6,
+    U: parseFloat(document.getElementById('uS').value)
+  };
+}
+
+function rcUpdate(){
+  const {R,C,U}=rcGet();
+  const tau=R*C;
+  document.getElementById('rD').textContent=(R/1000).toFixed(0);
+  document.getElementById('cD').textContent=(C*1e6).toFixed(0);
+  document.getElementById('uD').textContent=U.toFixed(0);
+  document.getElementById('rcT').textContent=tau.toFixed(2);
+  document.getElementById('rc5T').textContent=(5*tau).toFixed(2);
+  rcDraw();
+}
+
+function rcDraw(){
+  const canvas=document.getElementById('rcCvs');
+  if(!canvas) return;
+  const r=initCtx(canvas);
+  if(!r) return;
+  const {ctx,W,H}=r;
+  const {R,C,U}=rcGet();
+  const tau=R*C, tMax=RC_TMAX;
+  const pad={l:55,r:15,t:26,b:34}, cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+
+  grid(ctx,W,H,pad);
+
+  // Fixed x-axis time labels (0,1,2,3,4,5s)
+  const fsize=Math.max(10,Math.round(W*0.023));
+  ctx.font=`${fsize}px sans-serif`; ctx.fillStyle='#888'; ctx.textAlign='center';
+  for(let s=0;s<=5;s++){
+    const x=pad.l+s*cW/5;
+    ctx.fillText(`${s}s`,x,pad.t+cH+14);
+  }
+
+  // τ dashed vertical at current τ value (if within view)
+  if(tau<=tMax){
+    const tx=pad.l+(tau/tMax)*cW;
+    ctx.strokeStyle='#FF8F00'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(tx,pad.t); ctx.lineTo(tx,pad.t+cH); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#FF8F00'; ctx.font=`bold ${fsize}px sans-serif`; ctx.textAlign='center';
+    ctx.fillText('τ',tx,pad.t-6);
+  }
+
+  // y-axis labels (0 to U)
+  ctx.fillStyle='#666'; ctx.font=`${fsize}px sans-serif`; ctx.textAlign='right';
+  ctx.fillText(U+'V',pad.l-4,pad.t+5);
+  ctx.fillText('0',pad.l-4,pad.t+cH+4);
+  ctx.fillText((U/2).toFixed(1)+'V',pad.l-4,pad.t+cH/2+4);
+
+  // i(t) dashed blue — normalized 0→1 → maps to full cH
+  ctx.strokeStyle='#1E88E5'; ctx.lineWidth=2.5; ctx.setLineDash([7,4]);
+  ctx.beginPath();
+  for(let n=0;n<=500;n++){
+    const t=n/500*tMax;
+    const v=Math.exp(-t/tau);
+    const x=pad.l+(t/tMax)*cW, y=pad.t+cH-v*cH;
+    n===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // uC(t) solid green
+  ctx.strokeStyle='#2E7D32'; ctx.lineWidth=3.5;
+  ctx.beginPath();
+  for(let n=0;n<=500;n++){
+    const t=n/500*tMax;
+    const v=1-Math.exp(-t/tau);
+    const x=pad.l+(t/tMax)*cW, y=pad.t+cH-v*cH;
+    n===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // 63.2% dot (only if τ ≤ tMax)
+  if(tau<=tMax){
+    const tx=pad.l+(tau/tMax)*cW, ty=pad.t+cH-(1-Math.exp(-1))*cH;
+    ctx.fillStyle='#E53935';
+    ctx.beginPath(); ctx.arc(tx,ty,6,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle='#E53935'; ctx.font=`bold ${fsize-1}px sans-serif`; ctx.textAlign='left';
+    ctx.fillText('63.2%',tx+7,ty-3);
+  }
+
+  // Legend
+  const lfs=Math.max(11,Math.round(W*0.025));
+  ctx.font=`bold ${lfs}px sans-serif`; ctx.textAlign='left';
+  ctx.fillStyle='#2E7D32'; ctx.fillText('— uC(t)',pad.l+8,pad.t+18);
+  ctx.fillStyle='#1E88E5'; ctx.fillText('- - i(t)',pad.l+105,pad.t+18);
+
+  // τ value annotation
+  ctx.fillStyle='#FF8F00'; ctx.font=`bold ${lfs}px sans-serif`; ctx.textAlign='right';
+  ctx.fillText(`τ=${(tau).toFixed(2)}s`,W-pad.r-5,pad.t+18);
+}
+
+// ══════════════════════════════════════
+//  RL CANVAS — FIXED TIME AXIS: 0~10ms
+// ══════════════════════════════════════
+const RL_TMAX = 0.010; // 10ms fixed
+
+function rlGet(){
+  return {
+    R: parseFloat(document.getElementById('rlRS').value),
+    L: parseFloat(document.getElementById('rlLS').value)*1e-3,
+    U: parseFloat(document.getElementById('rlUS').value)
+  };
+}
+
+function rlUpdate(){
+  const {R,L,U}=rlGet();
+  const tau=L/R, ms=tau*1000;
+  document.getElementById('rlRD').textContent=R.toFixed(0);
+  document.getElementById('rlLD').textContent=(L*1000).toFixed(0);
+  document.getElementById('rlUD').textContent=U.toFixed(0);
+  document.getElementById('rlTV').textContent = ms>=1?ms.toFixed(2)+' ms':(tau*1e6).toFixed(1)+' μs';
+  document.getElementById('rl5TV').textContent = ms>=1?(5*ms).toFixed(2)+' ms':(5*tau*1e6).toFixed(1)+' μs';
+  rlDraw();
+}
+
+function rlDraw(){
+  const canvas=document.getElementById('rlCvs');
+  if(!canvas) return;
+  const r=initCtx(canvas);
+  if(!r) return;
+  const {ctx,W,H}=r;
+  ctx.fillStyle='#FBF8FF'; ctx.fillRect(0,0,W,H);
+  const {R,L,U}=rlGet();
+  const tau=L/R, Imax=U/R, tMax=RL_TMAX;
+  const pad={l:64,r:15,t:26,b:34}, cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+
+  grid(ctx,W,H,pad);
+
+  // Fixed x-axis labels (0,2,4,6,8,10 ms)
+  const fsize=Math.max(10,Math.round(W*0.023));
+  ctx.font=`${fsize}px sans-serif`; ctx.fillStyle='#888'; ctx.textAlign='center';
+  for(let k=0;k<=5;k++){
+    const x=pad.l+k*cW/5;
+    ctx.fillText(`${k*2}ms`,x,pad.t+cH+14);
+  }
+
+  // τ dashed vertical
+  if(tau<=tMax){
+    const tx=pad.l+(tau/tMax)*cW;
+    ctx.strokeStyle='#AB47BC'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(tx,pad.t); ctx.lineTo(tx,pad.t+cH); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#AB47BC'; ctx.font=`bold ${fsize}px sans-serif`; ctx.textAlign='center';
+    ctx.fillText('τ',tx,pad.t-6);
+  }
+
+  // y-axis (Imax)
+  const Ifmt = Imax>=1?Imax.toFixed(2)+'A':(Imax*1000).toFixed(1)+'mA';
+  ctx.fillStyle='#666'; ctx.font=`${fsize}px sans-serif`; ctx.textAlign='right';
+  ctx.fillText(Ifmt,pad.l-4,pad.t+5);
+  ctx.fillText('0',pad.l-4,pad.t+cH+4);
+
+  // Imax dashed reference
+  ctx.strokeStyle='#AB47BC'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l+cW,pad.t); ctx.stroke(); ctx.setLineDash([]);
+
+  // uL(t) dashed orange — normalized to 1
+  ctx.strokeStyle='#FF8F00'; ctx.lineWidth=2.5; ctx.setLineDash([7,4]);
+  ctx.beginPath();
+  for(let n=0;n<=500;n++){
+    const t=n/500*tMax;
+    const v=Math.exp(-t/tau);
+    const x=pad.l+(t/tMax)*cW, y=pad.t+cH-v*cH;
+    n===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // iL(t) solid purple — normalized to 1
+  ctx.strokeStyle='#6A1B9A'; ctx.lineWidth=3.5;
+  ctx.beginPath();
+  for(let n=0;n<=500;n++){
+    const t=n/500*tMax;
+    const v=1-Math.exp(-t/tau);
+    const x=pad.l+(t/tMax)*cW, y=pad.t+cH-v*cH;
+    n===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // 63.2% dot
+  if(tau<=tMax){
+    const tx=pad.l+(tau/tMax)*cW, ty=pad.t+cH-(1-Math.exp(-1))*cH;
+    ctx.fillStyle='#E53935';
+    ctx.beginPath(); ctx.arc(tx,ty,6,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle='#E53935'; ctx.font=`bold ${fsize-1}px sans-serif`; ctx.textAlign='left';
+    ctx.fillText('63.2%',tx+7,ty-3);
+  }
+
+  // Legend
+  const lfs=Math.max(11,Math.round(W*0.025));
+  ctx.font=`bold ${lfs}px sans-serif`; ctx.textAlign='left';
+  ctx.fillStyle='#6A1B9A'; ctx.fillText('— iL(t)',pad.l+8,pad.t+18);
+  ctx.fillStyle='#FF8F00'; ctx.fillText('- - uL(t)',pad.l+108,pad.t+18);
+
+  // τ annotation
+  const tauMs=(tau*1000);
+  ctx.fillStyle='#AB47BC'; ctx.font=`bold ${lfs}px sans-serif`; ctx.textAlign='right';
+  ctx.fillText(`τ=${tauMs>=1?tauMs.toFixed(2)+'ms':(tau*1e6).toFixed(0)+'μs'}`,W-pad.r-5,pad.t+18);
+}
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+window.addEventListener('load', ()=>{
+  rcUpdate();
+  rlUpdate();
+  updateNav();
+});
+window.addEventListener('resize', ()=>{
+  if(cur===3) rcDraw();
+  if(cur===5) rlDraw();
+});
+</script>
+</body>
+</html>
